@@ -86,9 +86,95 @@ module Prawn
     #
     # Raises <tt>Prawn::Errrors::CannotFit</tt> if not wide enough to print
     # any text
-    #
-    def text_box(string, options)
-      Text::Box.new(string, options.merge(:document => self)).render
+          
+    def text_box(fragments, options={})         
+      with_options options do |options|          
+        box = if options[:underlays]
+          box = Text::Formatted::Box.new(build_fragments(fragments), options.merge(:document => self))
+          Drawer.new(self, box, options).draw
+          box
+        else
+          Text::Box.new(fragment_strings(fragments), options.merge(:document => self))
+        end
+        box.render                
+      end
+    end
+
+    def build_fragments(fragments)
+      frags = []
+      fragments.each do |frag|
+        case frag
+        when String
+          frags << {:text => frag}
+        else                                                                                    
+          if !(frag.kind_of?(Hash) && frag[:text])
+            raise ArgumentError, "text_box must contain content of either String or :text Hashes" 
+          else
+            frags << frag 
+          end
+        end
+      end                    
+      frags
+    end
+
+
+    def fragment_strings(fragments)
+      string = case fragments
+      when Array
+        fragments.join(' ')
+      when String
+        fragments
+      else
+        raise ArgumentError, "text_box first argument must be either a String or an Array of Strings or :text Hashes"
+      end
+    end
+
+    def config_margin(options)
+      margin = options[:margin] || 0        
+      default_margin = margin.kind_of?(Fixnum) ? margin : 0
+      hash_margin = margin.kind_of?(Hash) ? margin : {}
+      margin = margin_hash(hash_margin, default_margin)           
+    end
+
+    def margin_hash(margin, default_margin)
+      margin[:left] ||= default_margin
+      margin[:right] ||= default_margin      
+      margin[:top] ||= default_margin            
+      margin[:bottom] ||= default_margin            
+      margin
+    end
+
+    def config_padding(options)
+      padding = options[:padding] || 0        
+      default_padding = padding.kind_of?(Fixnum) ? padding : 0
+      hash_padding = padding.kind_of?(Hash) ? padding : {}
+      padding = padding_hash(hash_padding, default_padding)           
+    end
+
+    def padding_hash(padding, default_padding)
+      padding[:left] ||= default_padding
+      padding[:right] ||= default_padding      
+      padding[:top] ||= default_padding            
+      padding[:bottom] ||= default_padding            
+      padding
+    end
+          
+    def with_options(options, &block)
+      margin = config_margin(options)
+      padding = config_padding(options)
+
+      options = options.merge(:margin => margin).merge(:padding => padding)
+
+      # puts "padding: #{padding.inspect}"
+      # puts "margin: #{margin.inspect}"
+      
+      indent(margin[:left]) do
+        pad_top(margin[:top]) do
+          options.merge!(:at => [0, y])
+          yield options
+        end
+        move_down(margin[:bottom])         
+      end
     end
 
     # Generally, one would use the Prawn::Text#text_box convenience
@@ -101,7 +187,8 @@ module Prawn
       include Prawn::Core::Text::Wrap
 
       def valid_options
-        Prawn::Core::Text::VALID_OPTIONS + [:at, :height, :width,
+        Prawn::Core::Text::VALID_OPTIONS + [:at, :height, :width, 
+                                            :fill_color, :border_width, :border_color, :underlays, :border_style, :margin, :padding,
                                             :align, :valign,
                                             :rotate, :rotate_around,
                                             :overflow, :min_font_size,
@@ -124,6 +211,7 @@ module Prawn
       # The leading used during printing
       attr_reader :leading
 
+      attr_reader :fill_color, :border_width, :border_color, :border_style, :margin, :padding
 
       # Extend Prawn::Text::Box
       #
@@ -183,11 +271,18 @@ module Prawn
                            @at[1] - @document.bounds.bottom
         @align           = options[:align] || :left
         @vertical_align  = options[:valign] || :top
-        @leading         = options[:leading] || @document.default_leading?
+        @leading         = options[:leading] || 0
         @rotate          = options[:rotate] || 0
         @rotate_around   = options[:rotate_around] || :upper_left
         @single_line     = options[:single_line]
         @skip_encoding   = options[:skip_encoding] || @document.skip_encoding
+
+        @fill_color      = options[:fill_color]
+        @border_width    = options[:border_width]
+        @border_color    = options[:border_color]
+        @border_style    = options[:border_style]  
+        @margin          = options[:margin]
+        @padding         = options[:padding]
 
         if @overflow == :expand
           # if set to expand, then we simply set the bottom
@@ -254,6 +349,7 @@ module Prawn
         # above the descender
         @baseline_y.abs - @ascender - @leading
       end
+         
 
       # The width available at this point in the box
       #

@@ -7,6 +7,8 @@
 # This is free software. Please see the LICENSE and COPYING files for details.
 #
 
+require 'prawn/text/underlay'
+
 module Prawn
   module Text
     module Formatted
@@ -47,10 +49,11 @@ module Prawn
       #     and color using the appropriate tags if you which to draw attention
       #     to the link
       # <tt>:callback</tt>::
-      #     an object (or array of such objects) with two methods:
-      #     #render_behind and #render_in_front, which are called immediately
-      #     prior to and immediately after rendring the text fragment and which
-      #     are passed the fragment as an argument
+      #     a hash with the following options
+      #     <tt>:object</tt>:: required. the object to target
+      #     <tt>:method</tt>:: required. the method to call on the target object
+      #     <tt>:arguments</tt>:: optional. the arguments to pass to the
+      #         callback method
       #
       # == Example
       #
@@ -80,9 +83,21 @@ module Prawn
       #
       # Raises <tt>NotImplementedError</tt> if <tt>:ellipses</tt> <tt>overflow</tt>
       # option included
-      #
-      def formatted_text_box(array, options)
-        Text::Formatted::Box.new(array, options.merge(:document => self)).render
+      #               
+      include ::Prawn::Text::Underlay
+      
+      def formatted_text_box(array, options = {}) 
+        margin = options[:margin] || 0        
+        
+        with_options options do |options|            
+          options.merge!(:at => [0, y])
+          box = Text::Formatted::Box.new(array, options.merge(:document => self))
+          if options[:underlays]
+            # render box with fragments including texts and overlays    
+            Drawer.new(self, box, options).draw          
+          end
+          box.render          
+        end
       end
 
       # Generally, one would use the Prawn::Text::Formatted#formatted_text_box
@@ -94,20 +109,51 @@ module Prawn
       class Box < Prawn::Text::Box
         include Prawn::Core::Text::Formatted::Wrap
 
+        attr_accessor :fragments
+
         def initialize(array, options={})
           super(array, options)
+          @fragments = [] 
           if @overflow == :ellipses
-            raise NotImplementedError, "ellipses overflow unavailable with" +
-              "formatted box"
+            raise NotImplementedError, "ellipses overflow unavailable with " + "formatted box"
           end
         end
+
+        def fragments_width      
+          return if !fragments 
+          fragments.extend(ArrayExt) 
+          fragments.inject(0){|sum, f| sum + f.bounding_box.width} # TODO: include margin and padding
+        end
+
+        def width                        
+          width = fragments_width #+ horizontal_padding
+          @total_width ||= [width, @document.bounds.width].min  
+        end
+
+        def horizontal_padding          
+          @horizontal_padding ||= padding[:right] + padding[:left]
+        end
+
+        def vertical_padding          
+          @horizontal_padding ||= padding[:top] + padding[:bottom]
+        end
+          
 
         # The height actually used during the previous <tt>render</tt>
         # 
         def height
           return 0 if @baseline_y.nil? || @descender.nil?
           @baseline_y.abs + @line_height - @ascender
+          # puts "height: #{h}, baseline: #{@baseline_y.abs}, #{@line_height}, #{@ascender}"
         end
+                      
+        def box_height
+          height # + vertical_padding  
+
+          # return 0 if @baseline_y.nil? || @descender.nil?          
+          # @ascender + @document.font.line_gap
+        end
+
 
         # <tt>fragment</tt> is a Prawn::Text::Formatted::Fragment object
         #
@@ -121,18 +167,21 @@ module Prawn
             x = @at[0] + @width - line_width
           end
 
-          x += accumulated_width
+          x += accumulated_width   
+          
+          # x+= fragment.padding[:left] #KRM
 
           y = @at[1] + @baseline_y
 
           y += fragment.y_offset
 
+          # y+= fragment.padding[:top] #KRM
+
           fragment.left = x
           fragment.baseline = y
 
-          draw_fragment_underlays(fragment)
-
-          if @inked
+          if @inked      
+            # draw_fragment_underlays(fragment)
             if @align == :justify
               @document.word_spacing(word_spacing) {
                 @document.draw_text!(fragment.text, :at => [x, y],
@@ -142,9 +191,9 @@ module Prawn
               @document.draw_text!(fragment.text, :at => [x, y],
                                    :kerning => @kerning)
             end
-
             draw_fragment_overlays(fragment)
           end
+          fragments << fragment
         end
 
         private
@@ -173,20 +222,15 @@ module Prawn
           end
         end
 
-        def draw_fragment_underlays(fragment)
-          fragment.callback_objects.each do |obj|
-            obj.render_behind(fragment) if obj.respond_to?(:render_behind)
-          end
-        end
-
-        def draw_fragment_overlays(fragment)
+        def draw_fragment_overlays(fragment)   
           draw_fragment_overlay_styles(fragment)
           draw_fragment_overlay_link(fragment)
           draw_fragment_overlay_anchor(fragment)
-          fragment.callback_objects.each do |obj|
-            obj.render_in_front(fragment) if obj.respond_to?(:render_in_front)
-          end
         end
+
+        # def draw_fragment_underlays(fragment)   
+        #   draw_fragment_underlay_box(fragment)
+        # end
 
         def draw_fragment_overlay_link(fragment)
           return unless fragment.link
