@@ -100,6 +100,15 @@ module Prawn
         when Array
           subtable = Prawn::Table.new(options[:content], pdf, {})
           Cell::Subtable.new(pdf, at, options.merge(:content => subtable))
+        when File
+          Cell::Image.new(pdf, at, options)                    
+        when Hash
+          stamp = content[:stamp]           
+          if stamp
+            Cell::Stamp.new(pdf, at, options)             
+          else
+            raise ArgumentError, "Cell hash option not valid. Must be of the form :stamp => 'my_stamp' "            
+          end
         else
           # TODO: other types of content
           raise ArgumentError, "Content type not recognized: #{content.inspect}"
