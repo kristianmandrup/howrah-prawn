@@ -73,6 +73,25 @@ module Prawn
           end
         end
 
+        # Supports setting multiple properties at once.
+        #
+        #   table.cells[0, 0].style(:style => :bold, :background_color => 'ff0000')    
+        #
+        # is the same as:
+        #
+        #   table.cells[0, 0].style = :bold
+        #   table.cells[0, 0].background_color = 'ff0000'
+        #
+        # You can also pass a block, which will be called for each cell in turn.
+        # This allows you to set more complicated properties:
+        #
+        #   table.cells[0, 0].style { |cell| cell.border_width += 12 }
+        #
+        def style(options={}, &block)
+          options.each { |k, v| send("#{k}=", v) }
+          block.call(self) if block
+        end
+
         protected
 
         def with_font

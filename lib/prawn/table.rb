@@ -11,6 +11,7 @@ require 'prawn/table/cell'
 require 'prawn/table/cell/in_table'
 require 'prawn/table/cell/text'
 require 'prawn/table/cell/subtable'
+require 'prawn/table/cell/image'
 
 module Prawn
 
@@ -312,7 +313,7 @@ module Prawn
     end
 
     protected
-
+      
     # Converts the array of cellable objects given into instances of
     # Prawn::Table::Cell, and sets up their in-table properties so that they
     # know their own position in the table.

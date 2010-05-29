@@ -63,7 +63,7 @@ module Prawn
     # (See also: Prawn::Images::PNG , Prawn::Images::JPG)
     # 
     def image(file, options={})
-      Prawn.verify_options [:at, :position, :vposition, :height, 
+      Prawn.verify_options [:at, :position, :vposition, :height, :dry_run, 
                             :width, :scale, :fit], options
 
       if file.respond_to?(:read)
@@ -98,6 +98,8 @@ module Prawn
         image_registry[image_sha1] = {:obj => image_obj, :info => info}
       end
 
+      return info if options[:dry_run]
+      
       # find where the image will be placed and how big it will be  
       w,h = calc_image_dimensions(info, options)
 
