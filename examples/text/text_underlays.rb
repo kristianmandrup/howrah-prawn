@@ -5,8 +5,7 @@ Prawn::Document.generate("text_underlays.pdf") do
 
   options = { 
               :fill_color => 'ff0000', :underlays => true, :border_style => :solid, :border_width => 2, 
-              :margin => {:left => 20, :top => 30, :bottom => 10},
-              :padding => {:left => 20, :right => 40, :top => 30, :bottom => 10},
+              :margin => {:left => 20, :top => 30, :bottom => 10}              
             }
 
   formatted_text_box [{ :text => "goodbye", :fill_color => '0000aa', :border_width => 2, :underlays => true, :border_style => :none }, world], options
