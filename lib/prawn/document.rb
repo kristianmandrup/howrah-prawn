@@ -12,6 +12,7 @@ require "prawn/document/bounding_box"
 require "prawn/document/internals"
 require "prawn/document/snapshot"
 require "prawn/document/graphics_state"
+require "prawn/document/helpers"
 
 module Prawn
   
@@ -55,6 +56,7 @@ module Prawn
     include Prawn::Document::Snapshot
     include Prawn::Document::GraphicsState
     include Prawn::Document::Security
+    include Prawn::Document::Helpers
     include Prawn::Text
     include Prawn::Graphics
     include Prawn::Images

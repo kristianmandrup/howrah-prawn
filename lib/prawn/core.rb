@@ -69,7 +69,8 @@ module Prawn
     alias_method :C, :configuration
   end
 end
- 
+
+require "prawn/ruby_extensions" 
 require "prawn/compatibility"
 require "prawn/errors"
 require "prawn/core/pdf_object"

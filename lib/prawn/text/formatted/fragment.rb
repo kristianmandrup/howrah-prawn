@@ -9,10 +9,6 @@
 module Prawn
   module Text
     module Formatted
-
-      # Prawn::Text::Formatted::Fragment is a state store for a formatted text
-      # fragment. It does not render anything.
-      #
       class Fragment
 
         attr_reader :text, :format_state
@@ -33,10 +29,6 @@ module Prawn
           end
         end
 
-        def height
-          top - bottom
-        end
-
         def subscript?
           styles.include?(:subscript)
         end
@@ -52,12 +44,16 @@ module Prawn
           end
         end
 
+        def height
+          descender + ascender
+        end          
+
         def bounding_box
-          [left, bottom, right, top]
+          [left, baseline - descender, left + width, baseline + ascender].extend(ArrayExt)
         end
 
         def absolute_bounding_box
-          box = bounding_box
+          box = bounding_box.extend(ArrayExt)
           box[0] += @document.bounds.absolute_left
           box[2] += @document.bounds.absolute_left
           box[1] += @document.bounds.absolute_bottom
@@ -66,13 +62,15 @@ module Prawn
         end
 
         def underline_points
+          box = bounding_box
           y = baseline - 1.25
-          [[left, y], [right, y]]
+          [[box[0], y], [box[2], y]]
         end
 
         def strikethrough_points
+          box = bounding_box
           y = baseline + ascender * 0.3
-          [[left, y], [right, y]]
+          [[box[0], y], [box[2], y]]
         end
 
         def styles
@@ -91,6 +89,30 @@ module Prawn
           @format_state[:color]
         end
 
+        def fill_color
+          @format_state[:fill_color]
+        end
+
+        def border_width
+          @format_state[:border_width]
+        end
+
+        def border_color
+          @format_state[:border_color]
+        end
+
+        def border_style
+          @format_state[:border_style]
+        end
+
+        def margin
+          @format_state[:margin] || {:left => 0, :right => 0, :top => 0, :bottom => 0}
+        end
+
+        def padding
+          @format_state[:padding] || {:left => 0, :right => 0, :top => 0, :bottom => 0}
+        end
+
         def font
           @format_state[:font]
         end
@@ -99,77 +121,59 @@ module Prawn
           @format_state[:size]
         end
 
-        def callback_objects
-          callback = @format_state[:callback]
-          if callback.nil?
-            []
-          elsif callback.is_a?(Array)
-            callback
-          else
-            [callback]
+        def callback_object
+          callback[:object]
+        end
+
+        def callback_method
+          callback[:method]
+        end
+
+        def callback_arguments
+          callback[:arguments]
+        end
+
+        def finished
+          if callback_object && callback_method
+            if callback_arguments
+              callback_object.send(callback_method, self, *callback_arguments)
+            else
+              callback_object.send(callback_method, self)
+            end
           end
         end
 
-        def right
-          left + width
+        def callback_start_object
+          callback[:start_object]
         end
 
-        def top
-          baseline + ascender
+        def callback_start_method
+          callback[:start_method]
         end
 
-        def bottom
-          baseline - descender
+        def callback_start_arguments
+          callback[:start_arguments]
         end
 
-        def top_left
-          [left, top]
+        def started
+          if callback_start_object && callback_start_method
+            if callback_start_arguments
+              callback_start_object.send(callback_start_method, self, *callback_start_arguments)
+            else
+              callback_start_object.send(callback_start_method, self)
+            end
+          end
+        end
+        private
+
+        def callback_start
+          @format_state[:callback_start] || {}
         end
 
-        def top_right
-          [right, top]
+        def callback
+          @format_state[:callback] || {}
         end
-
-        def bottom_right
-          [right, bottom]
-        end
-
-        def bottom_left
-          [left, bottom]
-        end
-
-        def absolute_left
-          absolute_bounding_box[0]
-        end
-
-        def absolute_right
-          absolute_bounding_box[2]
-        end
-
-        def absolute_top
-          absolute_bounding_box[3]
-        end
-
-        def absolute_bottom
-          absolute_bounding_box[1]
-        end
-
-        def absolute_top_left
-          [absolute_left, absolute_top]
-        end
-
-        def absolute_top_right
-          [absolute_right, absolute_top]
-        end
-
-        def absolute_bottom_left
-          [absolute_left, absolute_bottom]
-        end
-
-        def absolute_bottom_right
-          [absolute_right, absolute_bottom]
-        end
-
+        
       end
     end
   end
