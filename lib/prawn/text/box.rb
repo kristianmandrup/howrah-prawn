@@ -87,9 +87,9 @@ module Prawn
     # Raises <tt>Prawn::Errrors::CannotFit</tt> if not wide enough to print
     # any text
           
-    def text_box(fragments, options={})         
-      with_options options do |options|          
-        box = if options[:underlays]
+    def text_box(fragments, options={})               
+      with_options options do |options|             
+        box = if options[:underlays]            
           box = Text::Formatted::Box.new(build_fragments(fragments), options.merge(:document => self))
           Drawer.new(self, box, options).draw
           box
@@ -101,7 +101,10 @@ module Prawn
     end
 
     def build_fragments(fragments)
-      frags = []
+      frags = []               
+      
+      return frags << {:text => fragments} if fragments.kind_of? String
+      
       fragments.each do |frag|
         case frag
         when String
@@ -271,6 +274,7 @@ module Prawn
                            @at[1] - @document.bounds.bottom
         @align           = options[:align] || :left
         @vertical_align  = options[:valign] || :top
+                
         @leading         = options[:leading] || 0
         @rotate          = options[:rotate] || 0
         @rotate_around   = options[:rotate_around] || :upper_left

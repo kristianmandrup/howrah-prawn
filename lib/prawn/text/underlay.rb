@@ -58,7 +58,7 @@ module Prawn
         end
 
         def draw_box_underlay_fill
-          pdf.with :fill_color, box.fill_color do
+          pdf.with :fill_color => box.fill_color do
             at = at_position
             if draw_border?
               pdf.fill_and_stroke_rectangle(at, box_width, box.box_height)              

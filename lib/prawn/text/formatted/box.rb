@@ -112,7 +112,7 @@ module Prawn
         attr_accessor :fragments
 
         def initialize(array, options={})
-          super(array, options)
+          super(array, options)           
           @fragments = [] 
           if @overflow == :ellipses
             raise NotImplementedError, "ellipses overflow unavailable with " + "formatted box"

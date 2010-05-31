@@ -680,7 +680,16 @@ describe "Text::Box wrapping" do
 
     results_with_accent.first_line.length.should == results_without_accent.first_line.length
   end
-  
+
+  # KRM
+  describe "text_box with String array" do
+    it "should be able to use String array as content argument" do
+      create_pdf
+      @pdf.text_box(["hello", "world"], {})
+      text = PDF::Inspector::Text.analyze(@pdf.render)
+      text.strings[0].should == "hello world"
+    end
+  end
 end
 
 def reduce_precision(float)

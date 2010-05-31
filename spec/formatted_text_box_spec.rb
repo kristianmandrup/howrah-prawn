@@ -643,7 +643,7 @@ describe "Text::Formatted::Box wrapping" do
 
     results_with_accent.first_line.length.should == no_accent.first_line.length
   end
-  
+
 end
 
 def reduce_precision(float)

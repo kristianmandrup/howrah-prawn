@@ -20,7 +20,7 @@ module Prawn
       attr_accessor :fragment, :position_box
 
       def draw_fragment_underlay_box 
-        pdf.with_config :join_style => :miter, :line_width => fragment.border_width, :stroke_color => fragment.border_color do          
+        pdf.with :join_style => :miter, :line_width => fragment.border_width, :stroke_color => fragment.border_color do          
           pdf.with_dash_style fragment.border_style do          
             if fragment_underlay?
               fill_area
