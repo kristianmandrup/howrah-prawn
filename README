@@ -1,29 +1,3 @@
-= Howrah-Prawn
-
-*IMPORTANT*
-This is a *forked version of Prawn 0.10.0 with some "extras"* specifically created in order to 
-support the *Howrah* project, an attempt to build a html -> pdf converter. These "extras" are from the branches: 
-
-* table-extras 
-* text-extras
-
-The branch 'table-extras' adds a lot of new accessor/selector functions to selecting cells in rows and cells for styling, such
-as for striping rows or columns. A new Table Image Cell has also been added.
-An examples demonstrating the new Image cell can be found in examples/image_table.rb.
-The new specs 'table_accessors_spec' and 'image_cell_spec' specify the new additions. 
-
-The branch 'text-extras' adds several new styling options to formatted text and "normal" text boxes, including an underlay that allows
-for a background color. These additions were made to enable more styling options for inline texts as available in a HTML page.
-This branch also adds some useful DSL block helpers that allow you to configure a certain set of styles to affect all Prawn operations within a block.
-The new DSL block helpers can be found in prawn/document/helpers.rb.
-
-Specs for many of the 'text-extras' additions are currently pending. 
-See examples/text_underlays.rb for an example of how to use the new underlay text styling feature. 
-
-These additions were all made by Kristian Mandrup.
-
-The original authors of Prawn are not in any way liable or responsible for this version of Prawn, but all credit for the version 0.10.0 this fork is based on goes to them! We hope that some of these additions in time prove good enough that they will me merged into core Prawn in the near future. 
-
 == Prawn
 
 Prawn is a PDF writing library for Ruby designed to be tiny, fast, and nimble,

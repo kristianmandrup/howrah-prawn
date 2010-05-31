@@ -44,7 +44,7 @@ task :examples do
   `mv *.pdf output`                     
 end
 
-spec = Gem::Specification.load "howrah-prawn.gemspec"
+spec = Gem::Specification.load "prawn.gemspec"
 Rake::GemPackageTask.new(spec) do |pkg|
   pkg.need_zip = true
   pkg.need_tar = true
