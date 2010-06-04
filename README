@@ -1,7 +1,7 @@
-== Prawn
+== Howrah-Prawn
 
-Prawn is a PDF writing library for Ruby designed to be tiny, fast, and nimble,
-just like the majestic sea creature.
+Howrah-Prawn is a sibling of Prawn, which is a PDF writing library for Ruby designed to be tiny, fast, and nimble,
+just like the majestic sea creature. 
 
 Development on this library was initially made possible thanks to 
 the many people who donated to the Ruby Mendicant project: 
@@ -126,15 +126,10 @@ http://github.com/sandal/prawn
 
 http://groups.google.com/group/prawn-ruby
 
-=== IRC:
-
-Find us in #prawn on irc.freenode.net
-  Gregory Brown: <sandal>
-  James Healy: <yob>               
-  Brad Ediger: <bradediger>
-  Daniel Nelson: <bluejade>
-  
 == Notes to Developers: 
 
 See HACKING file for details on getting set up with a local build.
+
+
+PLEASE NOTE: This is not the actual Prawn library. It's just some experimental work done in the course of development of another gem called Howrah.
 
